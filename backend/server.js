@@ -1,27 +1,44 @@
 // server.js
-import express from 'express';
-import bcrypt from 'bcryptjs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import sql from './db.js';
+
+import express from "express";
+import bcrypt from "bcryptjs";
+import path from "path";
+import { fileURLToPath } from "url";
+import cors from "cors";
+import sql from "./db.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// ---------- MIDDLEWARE ----------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.static("public"));
+
+// CORS: allow your frontend on Vercel
+const allowedOrigins = ["https://pro2-rjyg.vercel.app"];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: false,
+  })
+);
+
+// ---------- ROUTES ----------
 
 // Registration
-app.post('/register', async (req, res) => {
+app.post("/register", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const existing = await sql`SELECT * FROM users WHERE username = ${username}`;
+    const existing =
+      await sql`SELECT * FROM users WHERE username = ${username}`;
     if (existing.length > 0) {
-      return res.status(400).send('User already exists');
+      return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -30,21 +47,21 @@ app.post('/register', async (req, res) => {
       VALUES (${username}, ${hashedPassword})
     `;
 
-    res.send('Account created! Click here to login');
+    res.json({ success: true, message: "Account created!" });
   } catch (err) {
-    res.status(500).send('Error: ' + err.message);
+    res.status(500).json({ message: "Error: " + err.message });
   }
 });
 
 // Login
-app.post('/login', async (req, res) => {
+app.post("/login", async (req, res) => {
   const { username, password, role } = req.body;
 
   try {
     const results =
       await sql`SELECT * FROM users WHERE username = ${username.trim()}`;
     if (results.length === 0) {
-      return res.status(400).send('Invalid credentials');
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
     const user = results[0];
@@ -53,15 +70,15 @@ app.post('/login', async (req, res) => {
     if (isMatch) {
       res.json({ success: true, role, username });
     } else {
-      res.status(400).send('Invalid credentials');
+      res.status(400).json({ message: "Invalid credentials" });
     }
   } catch (err) {
-    res.status(500).send('Server error: ' + err.message);
+    res.status(500).json({ message: "Server error: " + err.message });
   }
 });
 
 // Book Appointment
-app.post('/appointments', async (req, res) => {
+app.post("/appointments", async (req, res) => {
   const { patient, doctor, date, slot, username } = req.body;
 
   try {
@@ -69,14 +86,17 @@ app.post('/appointments', async (req, res) => {
       INSERT INTO appointments (patient, doctor, date, slot, username)
       VALUES (${patient}, ${doctor}, ${date}, ${slot}, ${username})
     `;
-    res.json({ success: true, message: 'Appointment booked successfully!' });
+    res.json({
+      success: true,
+      message: "Appointment booked successfully!",
+    });
   } catch (err) {
-    res.status(500).send('Error: ' + err.message);
+    res.status(500).json({ message: "Error: " + err.message });
   }
 });
 
-// Get User Appointments
-app.get('/appointments', async (req, res) => {
+// Get Appointments
+app.get("/appointments", async (req, res) => {
   const { username } = req.query;
 
   try {
@@ -90,11 +110,12 @@ app.get('/appointments', async (req, res) => {
       res.json(appointments);
     }
   } catch (err) {
-    res.status(500).send('Error: ' + err.message);
+    res.status(500).json({ message: "Error: " + err.message });
   }
 });
 
-const PORT = 3000;
+// ---------- START ----------
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server http://localhost:${PORT}`);
 });
