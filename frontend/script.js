@@ -1,5 +1,6 @@
 // ---------- CONFIG ----------
-const API_BASE = "/api"; 
+const API_BASE = 'http://localhost:3000'; // for local testing now
+// later replace with your online backend URL, e.g. 'https://your-backend.onrender.com'
 
 // ---------- STATE ----------
 let currentUser = null; // { username, role }
@@ -41,7 +42,6 @@ function showSection(section) {
   registerSection.classList.add("hidden");
   userSection.classList.add("hidden");
   adminSection.classList.add("hidden");
-
   section.classList.remove("hidden");
 }
 
@@ -58,6 +58,7 @@ backToLoginBtn.addEventListener("click", () => {
 
 document.getElementById("registerForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+
   const username = regUsernameInput.value.trim();
   const password = regPasswordInput.value.trim();
 
@@ -121,7 +122,6 @@ loginBtn.addEventListener("click", async () => {
 
     currentUser = { username, role };
     loginMsg.textContent = "";
-
     usernameInput.value = "";
     passwordInput.value = "";
 
@@ -202,9 +202,12 @@ bookBtn.addEventListener("click", async () => {
 // ---------- LOAD APPOINTMENTS ----------
 async function loadUserAppointments() {
   if (!currentUser) return;
+
   try {
     const res = await fetch(
-      `${API_BASE}/appointments?username=${encodeURIComponent(currentUser.username)}`
+      `${API_BASE}/appointments?username=${encodeURIComponent(
+        currentUser.username
+      )}`
     );
     const data = await res.json();
 
@@ -212,12 +215,17 @@ async function loadUserAppointments() {
     if (Array.isArray(data)) {
       data.forEach((a) => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${a.doctor}</td><td>${a.date}</td><td>${a.slot}</td>`;
+        tr.innerHTML = `
+          <td>${a.patient}</td>
+          <td>${a.doctor}</td>
+          <td>${new Date(a.date).toLocaleDateString()}</td>
+          <td>${a.slot}</td>
+        `;
         userTableBody.appendChild(tr);
       });
     }
-  } catch {
-    // ignore UI error
+  } catch (err) {
+    console.error("Error loading user appointments:", err);
   }
 }
 
@@ -230,11 +238,19 @@ async function loadAllAppointments() {
     if (Array.isArray(data)) {
       data.forEach((a) => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${a.patient}</td><td>${a.doctor}</td><td>${a.date}</td><td>${a.slot}</td>`;
+        tr.innerHTML = `
+          <td>${a.patient}</td>
+          <td>${a.doctor}</td>
+          <td>${new Date(a.date).toLocaleDateString()}</td>
+          <td>${a.slot}</td>
+        `;
         adminTableBody.appendChild(tr);
       });
     }
-  } catch {
-    // ignore UI error
+  } catch (err) {
+    console.error("Error loading all appointments:", err);
   }
 }
+
+// ---------- INITIAL ----------
+showSection(loginSection);
