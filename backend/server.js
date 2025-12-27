@@ -1,4 +1,5 @@
 // server.js
+
 import express from "express";
 import bcrypt from "bcryptjs";
 import path from "path";
@@ -12,20 +13,16 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // ---------- MIDDLEWARE ----------
+app.use(
+  cors({
+    origin: "https://pro2-rjyq.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
-
-// CORS: allow ONLY your frontend on Vercel
-const allowedOrigins = ["https://pro2-rjyq.vercel.app"];
-
-app.use(
-  cors({
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: false,
-  })
-);
 
 // ---------- ROUTES ----------
 
@@ -85,6 +82,7 @@ app.post("/appointments", async (req, res) => {
       INSERT INTO appointments (patient, doctor, date, slot, username)
       VALUES (${patient}, ${doctor}, ${date}, ${slot}, ${username})
     `;
+
     res.json({
       success: true,
       message: "Appointment booked successfully!",
