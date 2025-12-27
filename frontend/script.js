@@ -1,5 +1,5 @@
 // ---------- CONFIG ----------
-const API_BASE = 'http://localhost:3000'; // for local testing now
+const API_BASE = 'https://pro2-backend.vercel.app'; // for local testing now
 // later replace with your online backend URL, e.g. 'https://your-backend.onrender.com'
 
 // ---------- STATE ----------
