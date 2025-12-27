@@ -13,12 +13,23 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // ---------- MIDDLEWARE ----------
+// ---------- MIDDLEWARE ----------
 app.use(
   cors({
     origin: "https://pro2-rjyq.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
 );
+
+// handle preflight for all routes
+app.options("*", (req, res) => {
+  res.sendStatus(204);
+});
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
