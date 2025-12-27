@@ -1,5 +1,4 @@
 // server.js
-
 import express from "express";
 import bcrypt from "bcryptjs";
 import path from "path";
@@ -17,8 +16,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-// CORS: allow your frontend on Vercel
-const allowedOrigins = ["https://pro2-rjyg.vercel.app"];
+// CORS: allow ONLY your frontend on Vercel
+const allowedOrigins = ["https://pro2-rjyq.vercel.app"];
 
 app.use(
   cors({
